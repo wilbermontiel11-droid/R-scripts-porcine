@@ -4,7 +4,7 @@
 
 BiocManager::install("org.Ss.eg.db")
 
-# Cargar paquetes
+# Load packages
 library(clusterProfiler)
 library(org.Ss.eg.db) # If you are using pig
 library(enrichplot)
