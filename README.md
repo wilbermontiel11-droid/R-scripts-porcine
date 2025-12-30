@@ -1,5 +1,7 @@
 # R-scripts-porcine
 
+# semantic network
+
 # =========Install the libraries ==============
 
 BiocManager::install("org.Ss.eg.db")
