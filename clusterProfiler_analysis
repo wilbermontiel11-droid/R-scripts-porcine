@@ -1,0 +1,65 @@
+
+# 1. Load the required libraries.
+library(clusterProfiler)
+library(org.Ss.eg.db)
+library(dplyr)
+library(ggplot2)
+
+# 2. Add the gene names (your gene list).
+gene_list <- c("gene1", "gene2")
+
+# 3. Convert gene symbols to ENTREZ IDs.
+gene_entrez <- bitr(gene_list,
+                    fromType = "SYMBOL",
+                    toType   = "ENTREZID",
+                    OrgDb    = org.Ss.eg.db)
+
+# 4. Perform GO enrichment analysis (Biological Process).
+ego_bp <- enrichGO(gene          = gene_entrez$ENTREZID,
+                   OrgDb         = org.Ss.eg.db,
+                   keyType       = "ENTREZID",
+                   ont           = "BP",
+                   pAdjustMethod = "BH",
+                   pvalueCutoff  = 0.05,
+                   qvalueCutoff  = 0.05,
+                   readable      = TRUE)
+
+# 5. Prepare the data for ggplot (DAVID-like format).
+ego_bp_df <- as.data.frame(ego_bp)
+
+# 6. Filter the top 20 terms by p-value.
+ego_bp_df <- ego_bp_df %>%
+  arrange(pvalue) %>%
+  slice_head(n = 20)
+
+# 7. Create a plot identical to the DAVID style.
+ggplot(ego_bp_df, aes(x = -log10(pvalue),
+                      y = reorder(ID, pvalue),
+                      size = Count,
+                      color = -log10(qvalue))) +
+  geom_point() +
+  labs(title = " ",
+       x = "-log10(P-valor)",
+       y = "Term GO (ID)",
+       size = "Count",
+       color = "-log10(FDR)") +
+  theme_minimal()
+
+# 8. Save the complete results as a CSV file.
+write.csv(as.data.frame(ego_bp), "GO_data_result.csv", row.names = FALSE)
+
+# 9. Save the plot as a PNG file.
+ggsave("GO_BP_clusterProfiler_plot.png", width = 8, height = 6, dpi = 300)
+
+# 10. Save the plot as a PDF file (high quality).
+ggsave("GO_BP_clusterProfiler_plot_.pdf", width = 8, height = 6)
+
+
+
+
+
+
+
+
+
+
