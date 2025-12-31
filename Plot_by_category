@@ -1,0 +1,56 @@
+# Load required packages.
+library(tidyverse)
+library(stringr)
+
+# 1. Read the file containing GO data (adjust the file name if necessary).
+go_data <- read.csv("David_name_data1.csv", header = TRUE)
+
+# 2. Prepare the data: extract IDs and clean columns.
+go_data <- go_data %>%
+  mutate(
+    term_id = str_extract(Term, "GO:\\d+"),
+    Count = as.numeric(Count),
+    PValue = as.numeric(PValue),
+    FDR = as.numeric(FDR),
+    Category = as.character(Category)
+  ) %>%
+  filter(!is.na(term_id))  # Eliminar filas sin ID GO
+
+# 3. Split by category.
+go_bp <- go_data %>% filter(str_detect(Category, "BP"))
+go_mf <- go_data %>% filter(str_detect(Category, "MF"))
+go_cc <- go_data %>% filter(str_detect(Category, "CC"))
+
+# 4. Plotting function.
+plot_go <- function(data, title) {
+  ggplot(data, aes(x = -log10(PValue), y = reorder(term_id, PValue),
+                   size = Count, color = -log10(FDR))) +
+    geom_point() +
+    labs(
+      title = title,
+      x = "-log10(P-valor)",
+      y = "GO ID",
+      size = "Count",
+      color = "-log10(FDR)"
+    ) +
+    theme_minimal() +
+    theme(axis.text.y = element_text(size = 8))
+}
+
+# 5. Plot and save each one.
+png("BP_data_name.png", width = 1200, height = 800, res = 150)
+print(plot_go(go_bp, "BP_data_name"))
+dev.off()
+
+png("MF_data_name.png", width = 1200, height = 800, res = 150)
+print(plot_go(go_mf, "MF_data_name"))
+dev.off()
+
+png("CC_data_name.png", width = 1200, height = 800, res = 150)
+print(plot_go(go_cc, "CC_data_name"))
+dev.off()
+
+# 6. Save supplementary files.
+write.csv(go_bp, "GO_BP_data_name.csv", row.names = FALSE)
+write.csv(go_mf, "GO_MF_date_name.csv", row.names = FALSE)
+write.csv(go_cc, "GO_CC_data_name.csv", row.names = FALSE)
