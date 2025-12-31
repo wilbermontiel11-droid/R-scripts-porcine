@@ -1,0 +1,39 @@
+# Load the libraries.
+library(tidyverse)
+library(ggplot2)
+
+# Assume you copied the data into a CSV file called "GO_data.csv".
+go_data <- read.csv("David_data.csv", header = TRUE) # Ajusta si es coma
+
+names(go_data)
+
+# Sort by PValue.
+go_data <- go_data %>% arrange(PValue)
+
+
+go_data <- go_data %>%
+  mutate(Term = str_extract(Term, "GO:\\d+"))
+
+
+# Make sure that PValue is numeric.
+go_data$PValue <- as.numeric(go_data$PValue)
+
+# Filter the 20 most significant terms.
+go_top20 <- go_data %>%
+  arrange(PValue) %>%
+  slice_head(n = 20)
+
+# Plot only the top 20.
+ggplot(go_top20, aes(x = -log10(PValue), y = reorder(Term, PValue),
+                     size = Count, color = -log10(FDR))) +
+  geom_point() +
+  labs(
+    title = "BP - Structure and Solidity of legs",
+    x = "-log10(P-valor)",
+    y = "Term GO (ID)",
+    color = "-log10(FDR)",
+    size = "Count"
+  ) +
+  theme_minimal()
+
+
